@@ -22,6 +22,7 @@ interface CartItem extends Product {
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [checkoutError, setCheckoutError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cashier_payment");
   const [customerName, setCustomerName] = useState("");
   const [tableNumber, setTableNumber] = useState("");
@@ -105,13 +106,17 @@ export default function MenuPage() {
 
   // CO
   const checkout = async () => {
-    if (!customerName || !tableNumber) {
-      alert("Customer name and table number are required!");
+    if (cart.length === 0) {
+      setCheckoutError(
+        "Your cart is empty. Please add at least one item before checkout.",
+      );
       return;
     }
 
-    if (cart.length === 0) {
-      alert("Cart is empty!");
+    setCheckoutError("");
+
+    if (!customerName || !tableNumber) {
+      setCheckoutError("Please enter customer name and table number.");
       return;
     }
 
@@ -338,6 +343,17 @@ export default function MenuPage() {
             )}
           </div>
 
+          {checkoutError && (
+            <div className="mt-4 flex items-start gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 text-orange-700">
+              <div className="text-lg">⚠️</div>
+
+              <div>
+                <p className="font-semibold">Checkout unavailable</p>
+                <p className="text-sm mt-1">{checkoutError}</p>
+              </div>
+            </div>
+          )}
+
           {/* Payment method */}
           <div className="mt-5">
             <label className="text-sm font-medium text-gray-700">
@@ -367,9 +383,9 @@ export default function MenuPage() {
           {/* button */}
           <button
             onClick={checkout}
-            className="bg-orange-500 hover:bg-orange-600 text-white w-full py-3 rounded-xl mt-5 transition"
-          >
-            Checkout
+            disabled={cart.length === 0}
+            className={`w-full py-3 rounded-xl mt-5 transition text-white ${cart.length === 0 ? "bg-gray-300 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600 cursor-pointer"}`}
+          > Checkout
           </button>
         </div>
       </div>
