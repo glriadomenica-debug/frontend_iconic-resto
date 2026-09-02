@@ -28,9 +28,15 @@ export default function LiveOrder() {
   const [orders, setOrders] = useState<KitchenOrder[]>([]);
 
   // Default filter = hari ini
-  const [filterDate, setFilterDate] = useState(
-    new Date().toLocaleDateString("en-CA"),
-  );
+  const getLocalDate = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const [filterDate, setFilterDate] = useState(getLocalDate());
 
   const token = localStorage.getItem("token");
 
@@ -42,14 +48,11 @@ export default function LiveOrder() {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      const data = res.data?.data ?? [];
-
+      const data = Array.isArray(res.data?.data) ? res.data.data : [];
       const activeOrders = data.filter(
         (item: KitchenOrder) =>
-          item.payment_status === "paid" &&
-          (item.kitchen_status === "pending" ||
-            item.kitchen_status === "cooking"),
+          item.kitchen_status === "pending" ||
+          item.kitchen_status === "cooking",
       );
 
       setOrders(activeOrders);
@@ -57,6 +60,7 @@ export default function LiveOrder() {
       console.error("Failed to fetch kitchen orders:", error);
     }
   };
+
   //Auto refresh every 3 seconds
   useEffect(() => {
     fetchOrders();
@@ -69,11 +73,15 @@ export default function LiveOrder() {
   }, []);
 
   //filter date
-  const filteredOrders = orders.filter(
-    (order) => order.queue_date === filterDate,
-  );
+  const filteredOrders = orders.filter((order) => {
+    if (!order.queue_date) {
+      return false;
+    }
 
-  //accept order from pendind -> cooking
+    return order.queue_date.substring(0, 10) === filterDate;
+  });
+
+  //accept order from pending -> cooking
   const acceptOrder = async (id: number) => {
     try {
       await axios.put(
