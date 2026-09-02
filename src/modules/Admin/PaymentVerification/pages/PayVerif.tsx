@@ -13,19 +13,24 @@ interface TransactionDetail {
 
 interface Transaction {
   id: number;
+  queue_number: number | null;
+  queue_date: string | null;
   customer_name: string;
   table_number: string;
   total_price: number;
   payment_method: string;
-  status: string;
+  payment_status: "unpaid" | "paid";
+  kitchen_status: "pending" | "cooking" | "ready" | "served";
   created_at: string;
-
   transaction_details: TransactionDetail[];
 }
 
 export default function PaymentVerificationPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterDate, setFilterDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
 
   // MODAL
   const [openModal, setOpenModal] = useState(false);
@@ -36,6 +41,7 @@ export default function PaymentVerificationPage() {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
+  //Fetch Transactions
   const fetchTransactions = async () => {
     try {
       const res = await axios({
@@ -47,7 +53,7 @@ export default function PaymentVerificationPage() {
       });
 
       const filtered = res.data.data.data.filter(
-        (item: Transaction) => item.status !== "cancelled",
+        (item: Transaction) => item.payment_status !== undefined,
       );
 
       setTransactions(filtered);
@@ -60,18 +66,30 @@ export default function PaymentVerificationPage() {
     fetchTransactions();
   }, []);
 
+  //Filter transaction
   const filteredTransactions = transactions.filter((item) => {
+    // Filter berdasarkan tanggal
+    const transactionDate = new Date(item.created_at).toLocaleDateString(
+      "en-CA",
+    );
+
+    if (filterDate && transactionDate !== filterDate) {
+      return false;
+    }
+
+    // Filter berdasarkan PAYMENT status
     if (filterStatus === "paid") {
-      return item.status === "paid";
+      return item.payment_status === "paid";
     }
 
     if (filterStatus === "unpaid") {
-      return item.status !== "paid";
+      return item.payment_status !== "paid";
     }
 
-    return item.status !== "cancelled";
+    return true;
   });
 
+  //Verify Payment
   const verifyPayment = async (id: number, paymentMethod: string) => {
     try {
       await axios({
@@ -88,13 +106,13 @@ export default function PaymentVerificationPage() {
         },
       });
 
-      fetchTransactions();
+      await fetchTransactions();
     } catch (error) {
       console.log(error);
     }
   };
 
-  // FETCH MENU DETAIL
+  //Fetch Menu detail
   const viewMenus = async (transactionId: number, customer: string) => {
     try {
       const res = await axios({
@@ -106,6 +124,7 @@ export default function PaymentVerificationPage() {
       });
 
       console.log(res.data);
+
       setSelectedMenus(res.data.data);
       setSelectedCustomer(customer);
       setOpenModal(true);
@@ -114,10 +133,53 @@ export default function PaymentVerificationPage() {
     }
   };
 
+  //Payment status label
+  const getPaymentStatusLabel = (status: Transaction["payment_status"]) => {
+    if (status === "paid") {
+      return "Paid";
+    }
+
+    return "Unpaid";
+  };
+
+  const formatPaymentType = (value: string) => {
+    return value
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  //Kitchen status label
+  const getKitchenStatusLabel = (status: Transaction["kitchen_status"]) => {
+    switch (status) {
+      case "pending":
+        return "Pending";
+
+      case "cooking":
+        return "Cooking";
+
+      case "ready":
+        return "Ready";
+
+      case "served":
+        return "Served";
+
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="p-6 min-h-screen bg-gray-100">
-      {/* Filter Payment*/}
       <div className="mb-6 flex justify-end items-center gap-3">
+        <label className="text-sm font-medium text-gray-700">Date</label>
+
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          className="border border-gray-300 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-orange-400"
+        />
+
         <label className="text-sm font-medium text-gray-700">
           Filter Payment
         </label>
@@ -128,9 +190,7 @@ export default function PaymentVerificationPage() {
           className="border border-gray-300 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-orange-400"
         >
           <option value="all">All</option>
-
           <option value="paid">Already Paid</option>
-
           <option value="unpaid">Not Paid Yet</option>
         </select>
       </div>
@@ -143,22 +203,33 @@ export default function PaymentVerificationPage() {
         <p className="text-gray-500">Verify customer payments</p>
       </div>
 
-      {/* CARD */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {transactions.length > 0 ? (
+        {filteredTransactions.length > 0 ? (
           filteredTransactions.map((t) => (
             <div key={t.id} className="bg-white rounded-2xl shadow-md p-5">
-              {/* CUSTOMER */}
               <div className="mb-4">
-                <h2 className="text-xl font-bold text-gray-800">
-                  {t.customer_name}
-                </h2>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      {t.customer_name}
+                    </h2>
 
-                <p className="text-gray-500">Table {t.table_number}</p>
+                    <p className="text-gray-500">Table {t.table_number}</p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">Queue</p>
+
+                    <p className="text-xl font-bold text-orange-500">
+                      {t.queue_number
+                        ? `#${String(t.queue_number).padStart(3, "0")}`
+                        : "-"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* INFO */}
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-md">
                 <div className="flex justify-between">
                   <span>Total</span>
 
@@ -170,27 +241,44 @@ export default function PaymentVerificationPage() {
                 <div className="flex justify-between">
                   <span>Payment Type</span>
 
-                  <span className="capitalize">{t.payment_method}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Status</span>
-
-                  <span
-                    className={`font-semibold capitalize ${
-                      t.status === "paid"
-                        ? "text-green-600"
-                        : t.status === "ready"
-                          ? "text-blue-600"
-                          : t.status === "cooking"
-                            ? "text-orange-600"
-                            : "text-yellow-600"
-                    }`}
-                  >
-                    {t.status}
+                  <span className="capitalize">
+                    {formatPaymentType(t.payment_method)}
                   </span>
                 </div>
 
+                <div className="flex justify-between">
+                  <span>Payment Status</span>
+
+                  <span
+                    className={`font-semibold capitalize ${
+                      t.payment_status === "paid"
+                        ? "text-green-600"
+                        : "text-yellow-600"
+                    }`}
+                  >
+                    {getPaymentStatusLabel(t.payment_status)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Kitchen Status</span>
+
+                  <span
+                    className={`font-semibold capitalize ${
+                      t.kitchen_status === "ready"
+                        ? "text-blue-600"
+                        : t.kitchen_status === "cooking"
+                          ? "text-orange-600"
+                          : t.kitchen_status === "served"
+                            ? "text-green-600"
+                            : "text-yellow-600"
+                    }`}
+                  >
+                    {getKitchenStatusLabel(t.kitchen_status)}
+                  </span>
+                </div>
+
+                {/* DATE */}
                 <div className="flex justify-between">
                   <span>Date</span>
 
@@ -200,7 +288,6 @@ export default function PaymentVerificationPage() {
                 </div>
               </div>
 
-              {/* View ordered menu */}
               <button
                 onClick={() => viewMenus(t.id, t.customer_name)}
                 className="w-full mt-5 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl transition cursor-pointer"
@@ -208,8 +295,7 @@ export default function PaymentVerificationPage() {
                 View Ordered Menu
               </button>
 
-              {/* Verify payment */}
-              {t.status !== "paid" ? (
+              {t.payment_status !== "paid" ? (
                 <button
                   onClick={() => verifyPayment(t.id, t.payment_method)}
                   className="w-full mt-3 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl transition cursor-pointer"
@@ -233,10 +319,10 @@ export default function PaymentVerificationPage() {
         )}
       </div>
 
-      {/* MODAL */}
       {openModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-[90%] max-w-lg">
+            {/* MODAL HEADER */}
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-2xl font-bold">
                 Ordered Menu - {selectedCustomer}
