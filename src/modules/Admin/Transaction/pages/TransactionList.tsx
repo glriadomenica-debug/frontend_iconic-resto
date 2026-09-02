@@ -10,11 +10,14 @@ import { Link } from "react-router-dom";
 
 interface Transaction {
   id: number;
+  queue_number: number;
   customer_name: string;
   table_number: number;
   total_price: number;
   payment_method: string;
-  status: string;
+  payment_status: string;
+  kitchen_status: string;
+  status?: string;
   created_at: string;
 }
 
@@ -31,8 +34,37 @@ export default function TransactionList() {
   const [openReport, setOpenReport] = useState(false);
   const [reportData, _setReportData] = useState<any>(null);
 
+  //Format currency
+  const formatCurrency = (value: number) => {
+    return `$${Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  //Format Payment status
+  const formatPaymentStatus = (value: string) => {
+    if (!value) return "-";
+
+    return value
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  // Format kitchen status
+  const formatKitchenStatus = (value: string) => {
+    if (!value) return "-";
+
+    return value
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  // Fetch Transaction
   const fetchTransactions = async (pageNumber: number) => {
     try {
+      setLoading(true);
+
       const res = await axios({
         method: "GET",
         url: `http://localhost:8000/api/transactions?page=${pageNumber}`,
@@ -41,11 +73,10 @@ export default function TransactionList() {
         },
       });
 
-      // setTransactions(res.data.data || []);
-      setTransactions(res.data.data.data);
-      setLastPage(res.data.data.last_page);
+      setTransactions(res.data.data.data || []);
+      setLastPage(res.data.data.last_page || 1);
     } catch (err) {
-      console.log(err);
+      console.log("Failed to fetch transactions:", err);
     } finally {
       setLoading(false);
     }
@@ -55,6 +86,7 @@ export default function TransactionList() {
     fetchTransactions(page);
   }, [page]);
 
+  // Open detail
   const openDetail = async (id: number) => {
     try {
       const res = await axios({
@@ -68,16 +100,24 @@ export default function TransactionList() {
       setSelected(res.data.data);
       setIsDetailOpen(true);
     } catch (err) {
-      console.log(err);
+      console.log("Failed to fetch transaction detail:", err);
     }
   };
 
+  // Open edit modal
   const openEditModal = (transaction: Transaction) => {
     setEditData(transaction);
     setOpenEdit(true);
   };
 
+  //Del transaction
   const deleteTransaction = async (id: number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this transaction?",
+    );
+
+    if (!confirmed) return;
+
     try {
       await axios({
         method: "DELETE",
@@ -89,34 +129,59 @@ export default function TransactionList() {
 
       setTransactions((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
-      console.log(err);
+      console.log("Failed to delete transaction:", err);
     }
   };
 
-  const updatePaid = async (id: number) => {
+  // paymnet verification
+  const updatePaid = async (transaction: Transaction) => {
+    if (transaction.payment_status === "paid") {
+      return;
+    }
+
     try {
       await axios({
-        method: "PUT",
-        url: `http://localhost:8000/api/transactions/${id}`,
+        method: "POST",
+        url: `http://localhost:8000/api/payment-verifications/${transaction.id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
         data: {
-          status: "paid",
+          verified_by: localStorage.getItem("user_id") || null,
+          payment_method: transaction.payment_method,
         },
       });
 
-      fetchTransactions(page);
-    } catch (error) {
-      console.log(error);
+      // Only update payment status
+      // kitchen status can't be updated here, it will be updated in the kitchen order page
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.id === transaction.id
+            ? {
+                ...t,
+                payment_status: "paid",
+              }
+            : t,
+        ),
+      );
+    } catch (error: any) {
+      console.log("Payment verification failed:", error);
+
+      if (error?.response?.status === 409) {
+        fetchTransactions(page);
+      }
     }
   };
 
   const handleUpdateStatus = async () => {
+    if (!editData) return;
+
     try {
       await axios.put(
         `http://localhost:8000/api/transactions/${editData.id}`,
-        { customer_name: editData.customer_name, status: editData.status },
+        {
+          customer_name: editData.customer_name,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -127,71 +192,16 @@ export default function TransactionList() {
       setTransactions((prev) =>
         prev.map((t) =>
           t.id === editData.id
-            ? {
-                ...t,
-                customer_name: editData.customer_name,
-                status: editData.status,
-              }
+            ? { ...t, customer_name: editData.customer_name }
             : t,
         ),
       );
+
       setOpenEdit(false);
     } catch (err) {
-      console.log(err);
+      console.log("Failed to update transaction:", err);
     }
   };
-
-  // const generateReport = async () => {
-  //   try {
-  //     const res = await axios({
-  //       method: "GET",
-  //       url: "http://localhost:8000/api/transactions/report",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     const trx = res.data.data || [];
-
-  //     // TOTAL REVENUE
-  //     const totalRevenue = trx.reduce(
-  //       (sum: number, item: any) => sum + Number(item.total_price || 0),
-  //       0,
-  //     );
-
-  //     // PAYMENT METHOD
-  //     const paymentMap: Record<string, number> = {};
-
-  //     trx.forEach((item: any) => {
-  //       const method = item.payment_method || "unknown";
-
-  //       paymentMap[method] = (paymentMap[method] || 0) + 1;
-  //     });
-
-  //     // PRODUCT SOLD
-  //     const productMap: Record<string, number> = {};
-
-  //     trx.forEach((transaction: any) => {
-  //       transaction.transaction_details?.forEach((detail: any) => {
-  //         const productName = detail.product?.product_name;
-
-  //         if (!productName) return;
-
-  //         productMap[productName] = (productMap[productName] || 0) + detail.qty;
-  //       });
-  //     });
-
-  //     setReportData({
-  //       totalRevenue,
-  //       paymentMap,
-  //       productMap,
-  //     });
-
-  //     setOpenReport(true);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   return (
     <>
@@ -201,16 +211,19 @@ export default function TransactionList() {
             <h1 className="text-2xl font-bold text-gray-800">
               Transaction List
             </h1>
+
             <p className="text-sm text-gray-500">
               Manage restaurant transactions
             </p>
           </div>
+
           <div>
             <Link
               to="/transactions/report"
               className="flex items-center justify-between gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-xl transition"
             >
-              <AiFillFile /> Report
+              <AiFillFile />
+              Report
             </Link>
           </div>
         </div>
@@ -219,12 +232,12 @@ export default function TransactionList() {
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-orange-100 text-gray-700">
-                <th className="text-left px-4 py-3 rounded-l-xl">No</th>
+                <th className="text-left px-4 py-3 rounded-l-xl">Queue</th>
                 <th className="text-left px-4 py-3">Customer</th>
                 <th className="text-left px-4 py-3">Table Number</th>
                 <th className="text-left px-4 py-3">Total</th>
                 <th className="text-left px-4 py-3">Payment</th>
-                <th className="text-left px-4 py-3">Status</th>
+                <th className="text-left px-4 py-3">Kitchen</th>
                 <th className="text-left px-4 py-3">Date</th>
                 <th className="text-center px-4 py-3 rounded-r-xl">Action</th>
               </tr>
@@ -238,44 +251,67 @@ export default function TransactionList() {
                   </td>
                 </tr>
               ) : transactions.length > 0 ? (
-                transactions.map((t, index) => (
+                transactions.map((t) => (
                   <tr
                     key={t.id}
                     className="border-b border-gray-100 hover:bg-orange-50 transition"
                   >
-                    <td className="px-4 py-4">{index + 1}</td>
+                    <td className="px-4 py-4">
+                      <span className="font-bold text-orange-600">
+                        #0{t.queue_number ?? "-"}
+                      </span>
+                    </td>
 
                     <td className="px-4 py-4 font-medium text-gray-700">
                       {t.customer_name || "-"}
                     </td>
 
-                    <td className="px-4 py-4 font-medium text-gray-700 capitalize">
-                      {t.table_number}
+                    <td className="px-4 py-4 font-medium text-gray-700">
+                      {t.table_number ?? "-"}
                     </td>
 
                     <td className="px-4 py-4 font-medium text-gray-700">
-                      Rp. {(t.total_price * 1000).toLocaleString("id-ID")}
+                      {formatCurrency(t.total_price)}
                     </td>
 
-                    <td className="px-4 py-4 font-medium text-gray-700 capitalize">
-                      {t.payment_method}
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-sm text-gray-500">
+                          {formatPaymentStatus(t.payment_method)}
+                        </span>
+
+                        <span
+                          className={`w-fit px-3 py-1 rounded-full text-sm font-semibold ${
+                            t.payment_status === "paid"
+                              ? "bg-green-100 text-green-700"
+                              : t.payment_status === "unpaid"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : t.payment_status === "failed"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {formatPaymentStatus(t.payment_status)}
+                        </span>
+                      </div>
                     </td>
 
                     <td className="px-4 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          t.status === "pending"
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          t.kitchen_status === "pending"
                             ? "bg-yellow-100 text-yellow-700"
-                            : t.status === "cooking"
+                            : t.kitchen_status === "cooking"
                               ? "bg-blue-100 text-blue-700"
-                              : t.status === "served"
-                                ? "bg-purple-100 text-purple-700"
-                                : t.status === "paid"
-                                  ? "bg-green-100 text-green-700"
+                              : t.kitchen_status === "ready"
+                                ? "bg-green-100 text-green-700"
+                                : t.kitchen_status === "served"
+                                  ? "bg-purple-100 text-purple-700"
                                   : "bg-gray-100 text-gray-700"
                         }`}
                       >
-                        {t.status}
+                        {" "}
+                        {formatKitchenStatus(t.kitchen_status)}
                       </span>
                     </td>
 
@@ -284,7 +320,7 @@ export default function TransactionList() {
                     </td>
 
                     <td className="px-4 py-4">
-                      <div className="flex items-center justify-center gap-3">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => openDetail(t.id)}
                           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition cursor-pointer"
@@ -293,10 +329,15 @@ export default function TransactionList() {
                         </button>
 
                         <button
-                          onClick={() => updatePaid(t.id)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition cursor-pointer"
+                          onClick={() => updatePaid(t)}
+                          disabled={t.payment_status === "paid"}
+                          className={`px-4 py-2 rounded-lg text-sm transition ${
+                            t.payment_status === "paid"
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-green-500 hover:bg-green-600 text-white cursor-pointer"
+                          }`}
                         >
-                          Paid
+                          {t.payment_status === "paid" ? "Paid" : "Verify"}
                         </button>
 
                         <button
@@ -318,7 +359,7 @@ export default function TransactionList() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="text-center py-6 text-gray-500">
+                  <td colSpan={8} className="text-center py-6 text-gray-500">
                     No transaction found
                   </td>
                 </tr>
@@ -326,6 +367,7 @@ export default function TransactionList() {
             </tbody>
           </table>
         </div>
+
         <div className="flex justify-end items-center gap-3 mt-6">
           <button
             disabled={page === 1}
@@ -357,7 +399,6 @@ export default function TransactionList() {
         </div>
       </div>
 
-      {/* MODALS */}
       <TransactionDetailModal
         open={isDetailOpen}
         setOpen={setIsDetailOpen}
