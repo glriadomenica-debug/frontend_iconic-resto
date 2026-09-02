@@ -41,7 +41,13 @@ export default function PaymentVerificationPage() {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  //Fetch Transactions
+  const formatCurrency = (value: number) => {
+    return `$${Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
   const fetchTransactions = async () => {
     try {
       const res = await axios({
@@ -66,9 +72,7 @@ export default function PaymentVerificationPage() {
     fetchTransactions();
   }, []);
 
-  //Filter transaction
   const filteredTransactions = transactions.filter((item) => {
-    // Filter berdasarkan tanggal
     const transactionDate = new Date(item.created_at).toLocaleDateString(
       "en-CA",
     );
@@ -77,7 +81,6 @@ export default function PaymentVerificationPage() {
       return false;
     }
 
-    // Filter berdasarkan PAYMENT status
     if (filterStatus === "paid") {
       return item.payment_status === "paid";
     }
@@ -89,7 +92,6 @@ export default function PaymentVerificationPage() {
     return true;
   });
 
-  //Verify Payment
   const verifyPayment = async (id: number, paymentMethod: string) => {
     try {
       await axios({
@@ -112,7 +114,6 @@ export default function PaymentVerificationPage() {
     }
   };
 
-  //Fetch Menu detail
   const viewMenus = async (transactionId: number, customer: string) => {
     try {
       const res = await axios({
@@ -133,7 +134,6 @@ export default function PaymentVerificationPage() {
     }
   };
 
-  //Payment status label
   const getPaymentStatusLabel = (status: Transaction["payment_status"]) => {
     if (status === "paid") {
       return "Paid";
@@ -148,7 +148,6 @@ export default function PaymentVerificationPage() {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  //Kitchen status label
   const getKitchenStatusLabel = (status: Transaction["kitchen_status"]) => {
     switch (status) {
       case "pending":
@@ -234,7 +233,7 @@ export default function PaymentVerificationPage() {
                   <span>Total</span>
 
                   <span className="font-semibold text-orange-500">
-                    Rp. {(t.total_price * 1000).toLocaleString("id-ID")}
+                    {formatCurrency(t.total_price)}
                   </span>
                 </div>
 
@@ -278,7 +277,6 @@ export default function PaymentVerificationPage() {
                   </span>
                 </div>
 
-                {/* DATE */}
                 <div className="flex justify-between">
                   <span>Date</span>
 
@@ -322,7 +320,6 @@ export default function PaymentVerificationPage() {
       {openModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-[90%] max-w-lg">
-            {/* MODAL HEADER */}
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-2xl font-bold">
                 Ordered Menu - {selectedCustomer}
@@ -357,10 +354,7 @@ export default function PaymentVerificationPage() {
                   </div>
 
                   <div className="font-semibold text-orange-500">
-                    Rp.{" "}
-                    {(item.product.price * item.qty * 1000).toLocaleString(
-                      "id-ID",
-                    )}
+                    {formatCurrency(item.product.price * item.qty)}
                   </div>
                 </div>
               ))}
