@@ -128,18 +128,18 @@ export default function MyOrdersPage() {
                       : "Queue -"}
                   </h2>
 
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-md text-gray-500 mt-1">
                     Table {order.table_number}
                   </p>
 
-                  <p className="text-sm text-gray-500">{order.customer_name}</p>
+                  <p className="text-md text-gray-500">{order.customer_name}</p>
                 </div>
 
                 <div className="flex flex-col items-start sm:items-end gap-2">
-                  <span className="text-xs text-gray-500">Kitchen Status</span>
+                  <span className="text-sm text-gray-500">Kitchen Status</span>
 
                   <span
-                    className={`px-4 py-1 rounded-full text-sm font-semibold ${getKitchenStatusClass(
+                    className={`px-4 py-1 rounded-full text-md font-semibold ${getKitchenStatusClass(
                       order.kitchen_status,
                     )}`}
                   >
@@ -150,7 +150,7 @@ export default function MyOrdersPage() {
 
               <div className="bg-gray-50 rounded-xl p-4 mb-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Payment Status</span>
+                  <span className="text-md text-gray-600">Payment Status</span>
 
                   <span
                     className={`font-semibold ${getPaymentStatusClass(order.payment_status)}`}
@@ -161,8 +161,8 @@ export default function MyOrdersPage() {
                 </div>
 
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm text-gray-600">Payment Method</span>
-                  <span className="text-sm font-medium capitalize">
+                  <span className="text-md text-gray-600">Payment Method</span>
+                  <span className="text-md font-medium capitalize">
                     {order.payment_method.replaceAll("_", " ")}
                   </span>
                 </div>
@@ -201,7 +201,7 @@ export default function MyOrdersPage() {
               </div>
 
               <div className="mt-3 text-right">
-                <p className="text-xs text-gray-400">
+                <p className="text-md text-gray-400">
                   {new Date(order.created_at).toLocaleString("id-ID")}
                 </p>
               </div>
