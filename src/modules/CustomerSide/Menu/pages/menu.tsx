@@ -159,14 +159,16 @@ export default function MenuPage() {
       setOpenDetail(true);
       // Kalau self payment, akan direct ke WhatsApp
       if (paymentMethod === "self_payment") {
-        const adminPhone = "628123456789"; // ganti nomor admin
+        const adminPhone = "628211695844"; // ganti nomor admin
 
         const message = `
             Hello Admin, Saya ingin melakukan pembayaran self payment.
             Nama Customer : ${customerName}
             Nomor Meja : ${tableNumber}
-            Total Payment : Rp. ${(total * 1000).toLocaleString("id-ID")}
-
+            Total Payment : $${total.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
             Mohon kirim nomor rekening pembayaran.
 
             Terima kasih 🙌`;
@@ -179,8 +181,17 @@ export default function MenuPage() {
 
       setCustomerName("");
       setTableNumber("");
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
+
+      const message =
+        err?.response?.data?.message ||
+        "Some items are no longer available in the requested quantity.";
+
+      setCheckoutError(message);
+
+      // Refresh latest stock
+      await fetchProducts(currentPage);
     }
   };
 
@@ -217,9 +228,21 @@ export default function MenuPage() {
                 <div className="relative flex flex-col justify-end h-full p-4 text-white">
                   <h2 className="font-bold text-lg">{p.product_name}</h2>
                   <p className="text-sm mt-1">
-                    Rp. {(p.price * 1000).toLocaleString("id-ID")}
+                    $
+                    {p.price.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </p>
-                  <p className="text-xs opacity-80 mt-1">Stock : {p.stock}</p>
+                  {p.stock > 0 ? (
+                    <p className="text-xs opacity-80 mt-1">
+                      {p.stock} available
+                    </p>
+                  ) : (
+                    <p className="text-xs font-semibold text-red-300 mt-1">
+                      SOLD OUT
+                    </p>
+                  )}
                   <button
                     onClick={() => addToCart(p)}
                     disabled={p.stock === 0}
@@ -314,7 +337,11 @@ export default function MenuPage() {
                       </h2>
 
                       <p className="text-sm text-gray-500">
-                        Rp. {(i.price * 1000).toLocaleString("id-ID")}
+                        $
+                        {i.price.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </p>
                     </div>
 
@@ -376,7 +403,11 @@ export default function MenuPage() {
             <h2 className="text-lg font-bold text-gray-800">Total</h2>
 
             <h2 className="text-lg font-bold text-orange-500">
-              Rp. {(total * 1000).toLocaleString("id-ID")}
+              $
+              {total.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </h2>
           </div>
 
@@ -385,7 +416,9 @@ export default function MenuPage() {
             onClick={checkout}
             disabled={cart.length === 0}
             className={`w-full py-3 rounded-xl mt-5 transition text-white ${cart.length === 0 ? "bg-gray-300 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600 cursor-pointer"}`}
-          > Checkout
+          >
+            {" "}
+            Checkout
           </button>
         </div>
       </div>
