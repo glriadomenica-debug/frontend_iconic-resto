@@ -35,6 +35,13 @@ export default function MyOrdersPage() {
     return localStorage.getItem("customer_token");
   };
 
+  const formatCurrency = (value: number) => {
+    return `$${Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
   const fetchOrders = async () => {
     try {
       const token = getCustomerToken();
@@ -72,12 +79,16 @@ export default function MyOrdersPage() {
     switch (status) {
       case "pending":
         return "Pending";
+
       case "cooking":
         return "Cooking";
+
       case "ready":
         return "Ready";
+
       case "served":
         return "Served";
+
       default:
         return status;
     }
@@ -149,19 +160,22 @@ export default function MyOrdersPage() {
               </div>
 
               <div className="bg-gray-50 rounded-xl p-4 mb-5">
+                {/* PAYMENT STATUS */}
                 <div className="flex items-center justify-between">
                   <span className="text-md text-gray-600">Payment Status</span>
 
                   <span
-                    className={`font-semibold ${getPaymentStatusClass(order.payment_status)}`}
+                    className={`font-semibold ${getPaymentStatusClass(
+                      order.payment_status,
+                    )}`}
                   >
-                    {" "}
                     {getPaymentLabel(order.payment_status)}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-md text-gray-600">Payment Method</span>
+
                   <span className="text-md font-medium capitalize">
                     {order.payment_method.replaceAll("_", " ")}
                   </span>
@@ -180,13 +194,12 @@ export default function MyOrdersPage() {
                       </h3>
 
                       <p className="text-sm text-gray-500">
-                        {item.qty} x Rp{" "}
-                        {(item.price * 1000).toLocaleString("id-ID")}
+                        {item.qty} x {formatCurrency(item.price)}
                       </p>
                     </div>
 
                     <h3 className="font-semibold text-orange-500">
-                      Rp {(item.subtotal * 1000).toLocaleString("id-ID")}
+                      {formatCurrency(item.subtotal)}
                     </h3>
                   </div>
                 ))}
@@ -196,10 +209,11 @@ export default function MyOrdersPage() {
                 <h2 className="font-bold text-lg">Total</h2>
 
                 <h2 className="font-bold text-xl text-orange-500">
-                  Rp {(order.total_price * 1000).toLocaleString("id-ID")}
+                  {formatCurrency(order.total_price)}
                 </h2>
               </div>
 
+              {/* DATE */}
               <div className="mt-3 text-right">
                 <p className="text-md text-gray-400">
                   {new Date(order.created_at).toLocaleString("id-ID")}
