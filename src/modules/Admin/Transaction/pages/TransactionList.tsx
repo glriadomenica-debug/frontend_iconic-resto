@@ -33,6 +33,9 @@ export default function TransactionList() {
   const [lastPage, setLastPage] = useState(1);
   const [openReport, setOpenReport] = useState(false);
   const [reportData, _setReportData] = useState<any>(null);
+  const [deleteData, setDeleteData] = useState<Transaction | null>(null);
+  const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   //Format currency
   const formatCurrency = (value: number) => {
@@ -111,25 +114,33 @@ export default function TransactionList() {
   };
 
   //Del transaction
-  const deleteTransaction = async (id: number) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this transaction?",
-    );
+  const openDeleteModal = (transaction: Transaction) => {
+    setDeleteData(transaction);
+    setOpenDeleteConfirm(true);
+  };
 
-    if (!confirmed) return;
+  const deleteTransaction = async () => {
+    if (!deleteData) return;
 
     try {
+      setDeleting(true);
+
       await axios({
         method: "DELETE",
-        url: `http://localhost:8000/api/transactions/${id}`,
+        url: `http://localhost:8000/api/transactions/${deleteData.id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
+      setTransactions((prev) => prev.filter((t) => t.id !== deleteData.id));
+
+      setOpenDeleteConfirm(false);
+      setDeleteData(null);
     } catch (err) {
       console.log("Failed to delete transaction:", err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -348,8 +359,9 @@ export default function TransactionList() {
                         </button>
 
                         <button
-                          onClick={() => deleteTransaction(t.id)}
+                          onClick={() => openDeleteModal(t)}
                           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition cursor-pointer"
+                          title="Delete Transaction"
                         >
                           <AiFillDelete />
                         </button>
@@ -418,6 +430,90 @@ export default function TransactionList() {
         setOpen={setOpenReport}
         reportData={reportData}
       />
+
+      {openDeleteConfirm && deleteData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+            <div className="p-6">
+              {/* Icon */}
+              <div className="flex justify-center mb-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
+                  <AiFillDelete className="text-2xl text-red-600" />
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-center text-xl font-bold text-gray-800">
+                Delete Transaction?
+              </h2>
+
+              {/* Description */}
+              <p className="mt-2 text-center text-sm text-gray-500">
+                Are you sure you want to delete this transaction?
+              </p>
+
+              {/* Transaction info */}
+              <div className="mt-5 rounded-xl bg-gray-50 p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Queue</span>
+
+                  <span className="font-bold text-orange-600">
+                    #{String(deleteData.queue_number).padStart(2, "0")}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-sm text-gray-500">Customer</span>
+
+                  <span className="font-semibold text-gray-800">
+                    {deleteData.customer_name || "-"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-sm text-gray-500">Table</span>
+
+                  <span className="font-semibold text-gray-800">
+                    {deleteData.table_number ?? "-"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-sm text-gray-500">Total</span>
+
+                  <span className="font-bold text-gray-800">
+                    {formatCurrency(deleteData.total_price)}
+                  </span>
+                </div>
+              </div>
+
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenDeleteConfirm(false);
+                    setDeleteData(null);
+                  }}
+                  disabled={deleting}
+                  className="w-full rounded-xl bg-gray-200 px-4 py-2.5 font-semibold text-gray-700 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={deleteTransaction}
+                  disabled={deleting}
+                  className="w-full rounded-xl bg-red-500 px-4 py-2.5 font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                >
+                  {deleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
