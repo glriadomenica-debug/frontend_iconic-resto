@@ -1,64 +1,64 @@
-name: Deployment
+# name: Deployment
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
+# env:
+#   IMAGE_NAME: ghcr.io/${{ github.repository }}
 
-jobs:
-  #BUILD
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+# jobs:
+#   #BUILD
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Login to GHCR
+#         uses: docker/login-action@v3
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.actor }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & Push Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+#       - name: Build & Push Image
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: .
+#           push: true
+#           tags: ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
 
-  #Deploy port
-  deploy-production:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref_name == 'main'
-    environment: production
-    steps:
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+#   #Deploy port
+#   deploy-production:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     if: github.ref_name == 'main'
+#     environment: production
+#     steps:
+#       - name: Setup SSH
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+#           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Deploy ke Application
-        run: |
-          USER=${{ secrets.SERVER_USER }}
-          IP=${{ secrets.SERVER_IP }}
+#       - name: Deploy ke Application
+#         run: |
+#           USER=${{ secrets.SERVER_USER }}
+#           IP=${{ secrets.SERVER_IP }}
 
-          echo "USER=$USER"
-          echo "IP=$IP"
+#           echo "USER=$USER"
+#           echo "IP=$IP"
 
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $USER@$IP "
-            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} &&
-            docker pull ${{ env.IMAGE_NAME }}:main &&
-            docker stop react-prod || true &&
-            docker rm react-prod || true &&
-            docker run -d \
-              --name react-prod \
-              --restart unless-stopped \
-              -p 9105:80 \
-              ${{ env.IMAGE_NAME }}:main
-          "
+#           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $USER@$IP "
+#             docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} &&
+#             docker pull ${{ env.IMAGE_NAME }}:main &&
+#             docker stop react-prod || true &&
+#             docker rm react-prod || true &&
+#             docker run -d \
+#               --name react-prod \
+#               --restart unless-stopped \
+#               -p 9105:80 \
+#               ${{ env.IMAGE_NAME }}:main
+#           "
