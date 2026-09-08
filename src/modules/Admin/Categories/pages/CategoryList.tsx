@@ -185,7 +185,7 @@ export default function ListCategory() {
           <button
             type="button"
             onClick={handleOpenAddModal}
-            className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
+            className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition  cursor-pointer hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
           >
             + Add Category
           </button>
@@ -239,7 +239,7 @@ export default function ListCategory() {
                             bg-blue-500
                             px-3.5 py-2
                             text-sm font-medium text-white
-                            transition
+                            transition cursor-pointer
                             hover:bg-blue-600
                             focus:outline-none
                             focus:ring-2
@@ -258,7 +258,7 @@ export default function ListCategory() {
                             bg-red-500
                             px-3.5 py-2
                             text-sm font-medium text-white
-                            transition
+                            transition cursor-pointer
                             hover:bg-red-600
                             focus:outline-none
                             focus:ring-2
@@ -290,7 +290,7 @@ export default function ListCategory() {
             className={`
               rounded-lg px-4 py-2
               text-sm font-medium text-white
-              transition
+              transition cursor-pointer
               ${
                 currentPage === 1
                   ? "cursor-not-allowed bg-gray-300"
@@ -312,7 +312,7 @@ export default function ListCategory() {
             className={`
               rounded-lg px-4 py-2
               text-sm font-medium text-white
-              transition
+              transition cursor-pointer
               ${
                 currentPage === lastPage
                   ? "cursor-not-allowed bg-gray-300"
