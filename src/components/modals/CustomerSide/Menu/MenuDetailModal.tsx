@@ -115,13 +115,19 @@ export default function MenuDetailModal({
       ? String(data.queue_number).padStart(3, "0")
       : "-";
 
-      const formattedPaymentMethod = data.payment_method
+  const formattedPaymentMethod = data.payment_method
     ? data.payment_method.replaceAll("_", " ")
     : "-";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6"    onClick={handleClose} >
-      <div className=" relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()} >
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6"
+      onClick={handleClose}
+    >
+      <div
+        className=" relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5        ">
           <div>
             <h2 className="text-xl font-bold text-gray-800">
@@ -135,7 +141,10 @@ export default function MenuDetailModal({
           </div>
 
           <button
-            type="button" onClick={handleClose} className="rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
+            type="button"
+            onClick={handleClose}
+            className="rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+          >
             <AiOutlineClose className="text-xl" />
           </button>
         </div>
@@ -148,7 +157,9 @@ export default function MenuDetailModal({
                   Payment Status
                 </p>
 
-                <span className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getPaymentStatusStyle(data.payment_status)}`}> 
+                <span
+                  className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getPaymentStatusStyle(data.payment_status)}`}
+                >
                   {getPaymentLabel(data.payment_status)}
                 </span>
               </div>
@@ -203,8 +214,11 @@ export default function MenuDetailModal({
             {data.transaction_details && data.transaction_details.length > 0 ? (
               <div className="space-y-3">
                 {data.transaction_details.map((item, index) => (
-                  <div key={item.id || index} className="rounded-xl border border-gray-100 bg-white
-                      p-4 shadow-sm transition hover:border-orange-200 hover:bg-orange-50/30">
+                  <div
+                    key={item.id || index}
+                    className="rounded-xl border border-gray-100 bg-white
+                      p-4 shadow-sm transition hover:border-orange-200 hover:bg-orange-50/30"
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <h4 className="font-semibold text-gray-800">
@@ -230,7 +244,8 @@ export default function MenuDetailModal({
             ) : (
               <div
                 className="rounded-xl border border-dashed border-gray-300 px-4 py-8 text-center
-                ">
+                "
+              >
                 <p className="text-sm text-gray-500">
                   No items found for this transaction.
                 </p>
@@ -239,11 +254,13 @@ export default function MenuDetailModal({
           </div>
         </div>
 
-        <div
-          className="border-t border-gray-100 bg-gray-50 px-6 py-4">
+        <div className="border-t border-gray-100 bg-gray-50 px-6 py-4">
           <button
-            type="button" onClick={handleClose} className="w-full rounded-lg bg-gray-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-700 focus:outline-none
-              focus:ring-2 focus:ring-gray-300 " >
+            type="button"
+            onClick={handleClose}
+            className="w-full rounded-lg bg-gray-800 px-5 py-2.5 text-sm font-medium text-white transition cursor-pointer hover:bg-gray-700 focus:outline-none
+              focus:ring-2 focus:ring-gray-300 "
+          >
             Close
           </button>
         </div>
