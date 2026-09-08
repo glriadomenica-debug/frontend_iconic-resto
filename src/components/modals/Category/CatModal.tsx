@@ -1,9 +1,13 @@
+import { AiFillCloseCircle, AiFillSave } from "react-icons/ai";
+
 interface CategoryModal {
   title: string;
   openModal: boolean;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   handleSubmit: () => void;
-  handleChange: (e: any) => void;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  loading?: boolean;
+  onClose?: () => void;
 }
 
 export default function Modal({
@@ -12,46 +16,66 @@ export default function Modal({
   setOpenModal,
   handleSubmit,
   handleChange,
+  loading = false,
+  onClose,
 }: CategoryModal) {
-  return (
-    <div
-      className={`fixed inset-0 flex items-center justify-center z-50 ${
-        openModal ? "" : "hidden"
-      }`}
-      onClick={() => setOpenModal(false)}
-    >
-      <div className="absolute inset-0 bg-black/50"></div>
+  if (!openModal) return null;
 
-      {/* Content modal */}
-      <div
-        className="relative bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto"
+  const handleClose = () => {
+    if (loading) return;
+
+    if (onClose) {
+      onClose();
+    } else {
+      setOpenModal(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={handleClose}
+    >
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold mb-4 text-blue-900">{title}</h2>
-        <label htmlFor="category_name" className="text-blue-800">
-          Category Name
-        </label>
-        <input
-          type="text"
-          name="category_name"
-          placeholder="Category Name"
-          onChange={handleChange}
-          className="w-full border p-2 rounded mb-4"
-        />
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
 
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-900 cursor-pointer"
-          >
-            Save
+            <p className="mt-1 text-sm text-gray-500">
+              Add a new category to your restaurant.
+            </p>
+          </div>
+
+          <button type="button" onClick={handleClose} disabled={loading} className=" rounded-full p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed ">
+            <AiFillCloseCircle className="text-2xl" />
+          </button>
+        </div>
+
+        <div>
+          <label htmlFor="category_name" className="mb-2 block text-sm font-medium text-gray-700"
+          > Category Name
+          </label>
+
+          <input id="category_name" type="text" name="category_name" placeholder="e.g. Main Course" onChange={handleChange} disabled={loading} autoFocus className=" w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 disabled:bg-gray-100 "/>
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button type="button" onClick={handleClose} disabled={loading} className=" rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          > Cancel
           </button>
 
-          <button
-            onClick={() => setOpenModal(false)}
-            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-800 cursor-pointer"
-          >
-            Cancel
+          <button type="button" onClick={handleSubmit} disabled={loading} className=" flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300 disabled:cursor-not-allowed disabled:bg-orange-300" >
+            {loading ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <AiFillSave className="text-lg" />
+                Save Category
+              </>
+            )}
           </button>
         </div>
       </div>
