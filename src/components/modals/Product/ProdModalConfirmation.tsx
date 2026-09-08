@@ -1,5 +1,5 @@
-import { AiFillCloseCircle } from "react-icons/ai";
-import { AiFillSave } from "react-icons/ai";
+import { AiFillCloseCircle, AiFillDelete } from "react-icons/ai";
+
 interface ProductProps {
   title: string;
   description: string;
@@ -15,40 +15,79 @@ export default function ProductModalConfirmation({
   setOpenModal,
   handleSubmit,
 }: ProductProps) {
+  if (!openModal) return null;
+
+  const handleClose = () => {
+    setOpenModal(false);
+  };
+
   return (
-    <>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      onClick={handleClose}
+    >
       <div
-        className={`fixed inset-0 flex items-center justify-center z-50 transition-all duration-300 ${openModal ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
-        onClick={() => setOpenModal(false)}
+        className="
+          relative w-full max-w-md
+          rounded-xl bg-white
+          p-6 shadow-2xl
+          animate-in fade-in zoom-in-95 duration-200
+        "
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute inset-0 bg-black/50"> </div>
-
-        {/* Modal Content */}
-        <div
-          className="relative bg-white p-6 rounded-lg shadow-lg w-1/2 max-w-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h3 className="font-bold text-lg">{title}</h3>
-          <p className="my-4 text-gray-600">{description}</p>
-
-          <div className="flex gap-4 justify-end">
-            <button
-              className="px-4 py-2 bg-blue-900 opacity-80 text-white rounded hover:cursor-pointer"
-              onClick={handleSubmit}
-            >
-              <AiFillSave /> Yes
-            </button>
-
-            <button
-              className="flex items-center px-4 py-2 bg-blue-900 opacity-80 text-white rounded hover:cursor-pointer"
-              onClick={() => setOpenModal(false)}
-            >
-              {" "}
-              <AiFillCloseCircle /> No
-            </button>
+        <div className="flex justify-center mb-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
+            <AiFillDelete className="text-3xl text-red-600" />
           </div>
         </div>
+
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-gray-900">
+            {title || "Delete Product?"}
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-gray-500">
+            {description ||
+              "Are you sure you want to delete this product? This action cannot be undone."}
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="
+              flex items-center justify-center gap-2
+              rounded-lg border border-gray-300
+              bg-white px-5 py-2.5
+              text-sm font-medium text-gray-700
+              transition-colors
+              hover:bg-gray-100
+              focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer
+            "
+          >
+            <AiFillCloseCircle className="text-lg" />
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="
+              flex items-center justify-center gap-2
+              rounded-lg bg-red-600
+              px-5 py-2.5
+              text-sm font-medium text-white
+              transition-colors
+              hover:bg-red-700
+              focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer
+            "
+          >
+            <AiFillDelete className="text-lg" />
+            Delete
+          </button>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
