@@ -60,10 +60,6 @@ export default function Modal({
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Add a new staff member to your restaurant.
-            </p>
           </div>
 
           <button
