@@ -25,8 +25,10 @@ export default function ListCategory() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
   const fetchCategories = async () => {
     try {
       setLoading(true);
@@ -171,33 +173,29 @@ export default function ListCategory() {
   return (
     <>
       <div className="rounded-2xl bg-white p-6 shadow-md">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-semibold text-gray-800">
               Categories List
             </h1>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Manage restaurant categories
-            </p>
           </div>
 
           <button
             type="button"
             onClick={handleOpenAddModal}
-            className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition  cursor-pointer hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
+            className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition cursor-pointer hover:bg-orange-600"
           >
-            + Add Category
+            Add Category
           </button>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+          <table className="w-full text-left text-md">
             <thead>
-              <tr className="bg-orange-100 text-gray-700">
-                <th className="rounded-l-xl px-4 py-3 text-left">No</th>
-                <th className="px-4 py-3 text-left">Category Name</th>
-                <th className="rounded-r-xl px-4 py-3 text-center">Action</th>
+              <tr className="border-b bg-gray-50">
+                <th className="px-4 py-3">No</th>
+                <th className="px-4 py-3">Category Name</th>
+                <th className="px-4 py-3">Action</th>
               </tr>
             </thead>
 
@@ -211,97 +209,62 @@ export default function ListCategory() {
                     </div>
                   </td>
                 </tr>
-              ) : categories.length > 0 ? (
+              ) : categories.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="py-10 text-center text-gray-500">
+                    No categories found.
+                  </td>
+                </tr>
+              ) : (
                 categories.map((category, index) => (
-                  <tr
-                    key={category.id}
-                    className=" border-b border-gray-100 transition hover:bg-orange-50"
-                  >
-                    <td className="px-4 py-4 text-gray-600">
+                  <tr key={category.id} className="border-b">
+                    <td className="px-4 py-3 text-gray-600">
                       {(currentPage - 1) * 10 + index + 1}
                     </td>
 
-                    <td className="px-4 py-4 font-medium text-gray-700">
+                    <td className="px-4 py-3 font-medium text-gray-800">
                       {category.category_name}
                     </td>
 
-                    <td className="px-4 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        {/* EDIT */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() =>
                             navigate(`/categories/edit/${category.id}`)
                           }
-                          className="
-                            flex items-center gap-1.5
-                            rounded-lg
-                            bg-blue-500
-                            px-3.5 py-2
-                            text-sm font-medium text-white
-                            transition cursor-pointer
-                            hover:bg-blue-600
-                            focus:outline-none
-                            focus:ring-2
-                            focus:ring-blue-300
-                          "
+                          className="rounded-lg p-2 text-blue-500 transition cursor-pointer hover:bg-blue-50"
                         >
-                          <AiFillEdit />
+                          <AiFillEdit size={20} />
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleOpenDeleteModal(category)}
-                          className="
-                            flex items-center gap-1.5
-                            rounded-lg
-                            bg-red-500
-                            px-3.5 py-2
-                            text-sm font-medium text-white
-                            transition cursor-pointer
-                            hover:bg-red-600
-                            focus:outline-none
-                            focus:ring-2
-                            focus:ring-red-300
-                          "
+                          className="rounded-lg p-2 text-red-500 transition cursor-pointer hover:bg-red-50"
                         >
-                          <AiFillDelete />
+                          <AiFillDelete size={20} />
                         </button>
                       </div>
                     </td>
                   </tr>
                 ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="py-10 text-center text-gray-500">
-                    No categories found
-                  </td>
-                </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3">
+        <div className="mt-6 flex items-center justify-end gap-2">
           <button
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => prev - 1)}
-            className={`
-              rounded-lg px-4 py-2
-              text-sm font-medium text-white
-              transition cursor-pointer
-              ${
-                currentPage === 1
-                  ? "cursor-not-allowed bg-gray-300"
-                  : "bg-orange-500 hover:bg-orange-600"
-              }
-            `}
+            className="rounded-lg border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
-            Prev
+            Previous
           </button>
 
-          <span className="text-sm font-medium text-gray-700">
+          <span className="px-3 text-sm text-gray-600">
             Page {currentPage} of {lastPage}
           </span>
 
@@ -309,16 +272,7 @@ export default function ListCategory() {
             type="button"
             disabled={currentPage === lastPage}
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            className={`
-              rounded-lg px-4 py-2
-              text-sm font-medium text-white
-              transition cursor-pointer
-              ${
-                currentPage === lastPage
-                  ? "cursor-not-allowed bg-gray-300"
-                  : "bg-orange-500 hover:bg-orange-600"
-              }
-            `}
+            className="rounded-lg border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
             Next
           </button>
