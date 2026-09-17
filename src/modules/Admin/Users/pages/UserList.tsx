@@ -188,43 +188,31 @@ export default function ListUsers() {
 
   return (
     <>
-      <div className="mt-8 rounded-2xl bg-white p-6 shadow-md">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-2xl bg-white p-6 shadow-md">
+        <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Users Data</h1>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Manage system users and their roles.
-            </p>
+            <h1 className="text-2xl font-semibold text-gray-800">Users Data</h1>
           </div>
 
           <button
             type="button"
             onClick={handleOpenAddModal}
-            className="
-              flex items-center justify-center gap-1
-              rounded-xl bg-orange-500
-              px-5 py-2.5
-              text-sm font-medium text-white
-              transition hover:bg-orange-600
-              focus:outline-none focus:ring-2
-              focus:ring-orange-300
-            "
+            className="flex items-center justify-center gap-1 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition cursor-pointer hover:bg-orange-600"
           >
             <IoIosAdd className="text-xl" />
             Add New User
           </button>
         </div>
 
-        <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-[700px] border-collapse">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-md">
             <thead>
-              <tr className="bg-orange-100 text-gray-700">
-                <th className="rounded-l-xl px-4 py-3 text-left">No</th>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Email</th>
-                <th className="px-4 py-3 text-left">Role</th>
-                <th className="rounded-r-xl px-4 py-3 text-center">Action</th>
+              <tr className="border-b bg-gray-50">
+                <th className="px-4 py-3">No</th>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Action</th>
               </tr>
             </thead>
 
@@ -233,94 +221,57 @@ export default function ListUsers() {
                 <tr>
                   <td colSpan={5} className="py-10 text-center text-gray-500">
                     <div className="flex items-center justify-center gap-2">
-                      <div
-                        className="
-                          h-5 w-5 animate-spin rounded-full
-                          border-2 border-orange-500
-                          border-t-transparent
-                        "
-                      />
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
                       Loading users...
                     </div>
                   </td>
                 </tr>
-              ) : users.length > 0 ? (
-                users.map((user, index) => (
-                  <tr
-                    key={user.id}
-                    className="
-                      border-b border-gray-100
-                      transition hover:bg-orange-50
-                    "
-                  >
-                    <td className="px-4 py-4 text-gray-500">{index + 1}</td>
-
-                    <td className="px-4 py-4 font-medium text-gray-800">
-                      {user.name}
-                    </td>
-
-                    <td className="px-4 py-4 text-gray-600">{user.email}</td>
-
-                    <td className="px-4 py-4">
-                      <span
-                        className="
-                          inline-flex rounded-full
-                          bg-blue-100 px-3 py-1
-                          text-xs font-medium
-                          capitalize text-blue-700
-                        "
-                      >
-                        {user.role?.name || "-"}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(`/admin/user/edit/${user.id}`)
-                          }
-                          className="
-                            flex items-center gap-1.5
-                            rounded-lg bg-blue-500
-                            px-3.5 py-2
-                            text-sm font-medium text-white
-                            transition hover:bg-blue-600
-                            focus:outline-none
-                            focus:ring-2 focus:ring-blue-300
-                          "
-                        >
-                          <AiFillEdit />
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDeleteModal(user)}
-                          className="
-                            flex items-center gap-1.5
-                            rounded-lg bg-red-500
-                            px-3.5 py-2
-                            text-sm font-medium text-white
-                            transition hover:bg-red-600
-                            focus:outline-none
-                            focus:ring-2 focus:ring-red-300
-                          "
-                        >
-                          <AiFillDelete />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
+              ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-10 text-center text-gray-500">
                     No users found.
                   </td>
                 </tr>
+              ) : (
+                users.map((user, index) => (
+                  <tr key={user.id} className="border-b">
+                    <td className="px-4 py-3 text-gray-600">{index + 1}</td>
+
+                    <td className="px-4 py-3 font-medium text-gray-800">
+                      {user.name}
+                    </td>
+
+                    <td className="px-4 py-3 text-gray-600">{user.email}</td>
+
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-medium capitalize text-blue-700">
+                        {user.role?.name || "-"}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(`/admin/user/edit/${user.id}`)
+                          }
+                          className="rounded-lg p-2 text-blue-500 transition cursor-pointer hover:bg-blue-50"
+                        >
+                          <AiFillEdit size={20} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDeleteModal(user)}
+                          className="rounded-lg p-2 text-red-500 transition cursor-pointer hover:bg-red-50"
+                        >
+                          <AiFillDelete size={20} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
