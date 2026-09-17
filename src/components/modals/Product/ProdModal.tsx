@@ -1,6 +1,27 @@
 import { useEffect, useState } from "react";
+import { AiFillCloseCircle } from "react-icons/ai";
 
-interface ProductModal {
+interface Category {
+  id: number;
+  category_name: string;
+}
+
+type SizeName = "Small" | "Medium" | "Large";
+
+interface SizeForm {
+  enabled: boolean;
+  price: number;
+}
+
+interface FormProduct {
+  category_id: number;
+  product_name: string;
+  stock: number;
+  image: File | null;
+  sizes: Record<SizeName, SizeForm>;
+}
+
+interface ProductModalProps {
   title: string;
   openModal: boolean;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -9,227 +30,229 @@ interface ProductModal {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => void;
   handleImageChange: (file: File | null) => void;
-  categories: {
-    id: number;
-    category_name: string;
-  }[];
+  handleSizeToggle: (size: SizeName) => void;
+  formProduct: FormProduct;
+  categories: Category[];
+  saving: boolean;
 }
 
-export default function Modal({
+export default function ProductModal({
   title,
   openModal,
   setOpenModal,
   handleSubmit,
   handleChange,
   handleImageChange,
+  handleSizeToggle,
+  formProduct,
   categories,
-}: ProductModal) {
-  const [previewImage, setPreviewImage] = useState<string>("");
+  saving,
+}: ProductModalProps) {
+  const [previewImage, setPreviewImage] = useState("");
 
-  // =========================================================
-  // RESET PREVIEW WHEN MODAL CLOSES
-  // =========================================================
   useEffect(() => {
-    if (!openModal) {
+    if (!formProduct.image) {
       setPreviewImage("");
+      return;
     }
-  }, [openModal]);
 
-  // =========================================================
-  // HANDLE IMAGE
-  // =========================================================
+    const url = URL.createObjectURL(formProduct.image);
+    setPreviewImage(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [formProduct.image]);
+
+  if (!openModal) return null;
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
 
-    if (!file) {
-      setPreviewImage("");
-      handleImageChange(null);
-      return;
-    }
+    if (!file) return;
 
-    // Validate image
     if (!file.type.startsWith("image/")) {
       alert("Please select a valid image file.");
-      e.target.value = "";
       return;
     }
 
-    // Max 5MB
     if (file.size > 5 * 1024 * 1024) {
       alert("Image size must not exceed 5MB.");
-      e.target.value = "";
       return;
     }
 
     handleImageChange(file);
-
-    const previewUrl = URL.createObjectURL(file);
-
-    setPreviewImage(previewUrl);
   };
 
-  // =========================================================
-  // UI
-  // =========================================================
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center z-50 ${
-        openModal ? "" : "hidden"
-      }`}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6"
       onClick={() => setOpenModal(false)}
     >
-      {/* BACKDROP */}
-      <div className="absolute inset-0 bg-black/50"></div>
-
-      {/* MODAL */}
       <div
-        className="relative bg-white p-6 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* TITLE */}
-        <h2 className="text-xl font-bold mb-5 text-gray-800">{title}</h2>
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
 
-        {/* CATEGORY */}
-        <div className="mb-4">
-          <label
-            htmlFor="category_id"
-            className="block text-sm font-semibold text-gray-700 mb-1"
+          <button
+            type="button"
+            onClick={() => setOpenModal(false)}
+            disabled={saving}
+            className="text-gray-500 hover:text-red-500 disabled:opacity-50 cursor-pointer"
           >
-            Food Category
-          </label>
-
-          <select
-            id="category_id"
-            name="category_id"
-            className="w-full border border-gray-300 p-3 rounded-xl outline-none focus:ring-2 focus:ring-orange-400"
-            onChange={handleChange}
-            defaultValue=""
-          >
-            <option value="">-- Select Food Category --</option>
-
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.category_name}
-              </option>
-            ))}
-          </select>
+            <AiFillCloseCircle size={25} />
+          </button>
         </div>
 
-        {/* PRODUCT */}
-        <div className="mb-4">
-          <label
-            htmlFor="product_name"
-            className="block text-sm font-semibold text-gray-700 mb-1"
-          >
-            Product Name
-          </label>
+        {/* Form */}
+        <div className="space-y-5 px-6 py-6">
+          {/* Category */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Category
+            </label>
 
-          <input
-            type="text"
-            id="product_name"
-            name="product_name"
-            placeholder="Enter product name"
-            onChange={handleChange}
-            className="w-full border border-gray-300 p-3 rounded-xl outline-none focus:ring-2 focus:ring-orange-400"
-          />
-        </div>
+            <select
+              name="category_id"
+              value={formProduct.category_id}
+              onChange={handleChange}
+              disabled={saving}
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:border-orange-500"
+            >
+              <option value={0}>Select Category</option>
 
-        {/* PRICE */}
-        <div className="mb-4">
-          <label
-            htmlFor="price"
-            className="block text-sm font-semibold text-gray-700 mb-1"
-          >
-            Price
-          </label>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.category_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
-              $
-            </span>
+          {/* Product Name */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Product Name
+            </label>
+
+            <input
+              type="text"
+              name="product_name"
+              value={formProduct.product_name}
+              onChange={handleChange}
+              disabled={saving}
+              placeholder="Enter product name"
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:border-orange-500"
+            />
+          </div>
+
+          {/* Stock */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Stock
+            </label>
 
             <input
               type="number"
-              id="price"
-              name="price"
+              name="stock"
               min="0"
-              step="0.01"
-              placeholder="0.00"
+              value={formProduct.stock}
               onChange={handleChange}
-              className="w-full border border-gray-300 p-3 pl-8 rounded-xl outline-none focus:ring-2 focus:ring-orange-400"
+              disabled={saving}
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:border-orange-500"
             />
+          </div>
+
+          {/* Image */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Product Image
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={saving}
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm"
+            />
+
+            {previewImage && (
+              <div className="mt-4">
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  className="h-40 w-40 rounded-xl object-cover"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Sizes */}
+          <div>
+            <label className="mb-3 block text-sm font-medium text-gray-700">
+              Sizes & Prices
+            </label>
+
+            <div className="space-y-3">
+              {(["Small", "Medium", "Large"] as SizeName[]).map((size) => (
+                <div
+                  key={size}
+                  className="flex items-center gap-3 rounded-xl border border-gray-200 p-3"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formProduct.sizes[size].enabled}
+                    onChange={() => handleSizeToggle(size)}
+                    disabled={saving}
+                    className="h-4 w-4"
+                  />
+
+                  <span className="w-20 text-sm font-medium">{size}</span>
+
+                  <input
+                    type="number"
+                    min="0"
+                    name={`${size.toLowerCase()}_price`}
+                    value={formProduct.sizes[size].price}
+                    onChange={handleChange}
+                    disabled={!formProduct.sizes[size].enabled || saving}
+                    className="flex-1 rounded-xl border border-gray-300 px-4 py-2 outline-none focus:border-orange-500"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* STOCK */}
-        <div className="mb-4">
-          <label
-            htmlFor="stock"
-            className="block text-sm font-semibold text-gray-700 mb-1"
-          >
-            Stock
-          </label>
-
-          <input
-            type="number"
-            id="stock"
-            name="stock"
-            min="0"
-            placeholder="0"
-            onChange={handleChange}
-            className="w-full border border-gray-300 p-3 rounded-xl outline-none focus:ring-2 focus:ring-orange-400"
-          />
-        </div>
-
-        {/* IMAGE */}
-        <div className="mb-5">
-          <label
-            htmlFor="image"
-            className="block text-sm font-semibold text-gray-700 mb-1"
-          >
-            Product Image
-          </label>
-
-          {/* PREVIEW */}
-          {previewImage && (
-            <div className="mb-3">
-              <img
-                src={previewImage}
-                alt="Product preview"
-                className="w-full h-48 object-cover rounded-xl border border-gray-200"
-              />
-            </div>
-          )}
-
-          {/* FILE */}
-          <input
-            type="file"
-            id="image"
-            name="image"
-            accept="image/jpeg,image/png,image/jpg,image/webp"
-            onChange={handleFileChange}
-            className="w-full border border-gray-300 p-2.5 rounded-xl cursor-pointer bg-gray-50"
-          />
-
-          <p className="text-xs text-gray-500 mt-1">
-            JPG, JPEG, PNG, WEBP. Maximum 5MB.
-          </p>
-        </div>
-
-        {/* BUTTONS */}
-        <div className="flex justify-end gap-2">
+        {/* Footer */}
+        <div className="sticky bottom-0 flex justify-end gap-3 border-t bg-white px-6 py-4">
           <button
-            onClick={handleSubmit}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl transition cursor-pointer font-semibold"
+            type="button"
+            onClick={() => setOpenModal(false)}
+            disabled={saving}
+            className="rounded-xl border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 transition cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Save
+            Cancel
           </button>
 
           <button
-            onClick={() => setOpenModal(false)}
-            className="bg-gray-400 hover:bg-gray-500 text-white px-5 py-2.5 rounded-xl transition cursor-pointer font-semibold"
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving}
+            className="flex items-center rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition cursor-pointer hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-400"
           >
-            Cancel
+            {saving ? (
+              <>
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Saving...
+              </>
+            ) : (
+              "Add Product"
+            )}
           </button>
         </div>
       </div>

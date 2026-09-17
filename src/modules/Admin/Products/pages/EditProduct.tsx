@@ -8,6 +8,12 @@ interface Category {
   category_name: string;
 }
 
+interface ProductSize {
+  id: number;
+  size: "Small" | "Medium" | "Large";
+  price: number | string;
+}
+
 interface EditProduct {
   id: number;
   category_id: number;
@@ -15,16 +21,19 @@ interface EditProduct {
   price: number;
   stock: number;
   image: string;
+  sizes: ProductSize[];
+}
+
+interface SizeForm {
+  enabled: boolean;
+  price: number;
 }
 
 export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const API_URL = "http://localhost:8000";
-
   const [categories, setCategories] = useState<Category[]>([]);
-
   const [editProduct, setEditProduct] = useState<EditProduct>({
     id: 0,
     category_id: 0,
@@ -32,24 +41,33 @@ export default function EditProduct() {
     price: 0,
     stock: 0,
     image: "",
+    sizes: [],
   });
 
   const [formEditProduct, setFormEditProduct] = useState({
     category_id: 0,
     product_name: "",
-    price: 0,
     stock: 0,
     image: null as File | null,
+    sizes: {
+      Small: {
+        enabled: false,
+        price: 0,
+      },
+      Medium: {
+        enabled: false,
+        price: 0,
+      },
+      Large: {
+        enabled: false,
+        price: 0,
+      },
+    } as Record<"Small" | "Medium" | "Large", SizeForm>,
   });
 
   const [previewImage, setPreviewImage] = useState<string>("");
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  // =========================================================
-  // IMAGE URL
-  // =========================================================
   const getImageUrl = (image?: string) => {
     if (!image) return "";
 
@@ -64,19 +82,13 @@ export default function EditProduct() {
     return `${API_URL}/storage/${image}`;
   };
 
-  // =========================================================
-  // CURRENCY
-  // =========================================================
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | string) => {
     return `$${Number(value || 0).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   };
 
-  // =========================================================
-  // HANDLE INPUT
-  // =========================================================
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -85,27 +97,49 @@ export default function EditProduct() {
     setFormEditProduct((prev) => ({
       ...prev,
       [name]:
-        name === "category_id" || name === "price" || name === "stock"
-          ? Number(value)
-          : value,
+        name === "category_id" || name === "stock" ? Number(value) : value,
     }));
   };
 
-  // =========================================================
-  // HANDLE IMAGE
-  // =========================================================
+  const handleSizeToggle = (size: "Small" | "Medium" | "Large") => {
+    setFormEditProduct((prev) => ({
+      ...prev,
+      sizes: {
+        ...prev.sizes,
+        [size]: {
+          ...prev.sizes[size],
+          enabled: !prev.sizes[size].enabled,
+        },
+      },
+    }));
+  };
+
+  const handleSizePriceChange = (
+    size: "Small" | "Medium" | "Large",
+    value: string,
+  ) => {
+    setFormEditProduct((prev) => ({
+      ...prev,
+      sizes: {
+        ...prev.sizes,
+        [size]: {
+          ...prev.sizes[size],
+          price: Number(value),
+        },
+      },
+    }));
+  };
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
 
     if (!file) return;
 
-    // Validate image type
     if (!file.type.startsWith("image/")) {
       alert("Please select a valid image file.");
       return;
     }
 
-    // Validate size max 5MB
     if (file.size > 5 * 1024 * 1024) {
       alert("Image size must not exceed 5MB.");
       return;
@@ -119,9 +153,6 @@ export default function EditProduct() {
     setPreviewImage(URL.createObjectURL(file));
   };
 
-  // =========================================================
-  // FETCH PRODUCT
-  // =========================================================
   const fetchProduct = async () => {
     try {
       setLoading(true);
@@ -138,12 +169,42 @@ export default function EditProduct() {
 
       setEditProduct(data);
 
+      const sizes = {
+        Small: {
+          enabled: false,
+          price: 0,
+        },
+        Medium: {
+          enabled: false,
+          price: 0,
+        },
+        Large: {
+          enabled: false,
+          price: 0,
+        },
+      };
+
+      if (Array.isArray(data.sizes)) {
+        data.sizes.forEach((item: ProductSize) => {
+          if (
+            item.size === "Small" ||
+            item.size === "Medium" ||
+            item.size === "Large"
+          ) {
+            sizes[item.size] = {
+              enabled: true,
+              price: Number(item.price || 0),
+            };
+          }
+        });
+      }
+
       setFormEditProduct({
         category_id: data.category_id || 0,
         product_name: data.product_name || "",
-        price: Number(data.price || 0),
         stock: Number(data.stock || 0),
         image: null,
+        sizes,
       });
 
       if (data.image) {
@@ -156,9 +217,6 @@ export default function EditProduct() {
     }
   };
 
-  // =========================================================
-  // FETCH CATEGORIES
-  // =========================================================
   const fetchCategory = async () => {
     try {
       const response = await axios({
@@ -180,9 +238,6 @@ export default function EditProduct() {
     fetchProduct();
   }, [id]);
 
-  // =========================================================
-  // UPDATE PRODUCT
-  // =========================================================
   const handleSubmitUpdate = async () => {
     try {
       if (!formEditProduct.category_id) {
@@ -195,29 +250,45 @@ export default function EditProduct() {
         return;
       }
 
-      if (formEditProduct.price <= 0) {
-        alert("Please enter a valid price.");
-        return;
-      }
-
       if (formEditProduct.stock < 0) {
         alert("Stock cannot be negative.");
         return;
       }
 
+      const selectedSizes = Object.entries(formEditProduct.sizes).filter(
+        ([, data]) => data.enabled,
+      );
+
+      if (selectedSizes.length === 0) {
+        alert("Please select at least one food size.");
+        return;
+      }
+
+      for (const [size, data] of selectedSizes) {
+        if (data.price <= 0) {
+          alert(`Please enter a valid price for ${size}.`);
+          return;
+        }
+      }
+
       setSaving(true);
 
       const formData = new FormData();
-
       formData.append("category_id", String(formEditProduct.category_id));
-
-      formData.append("product_name", formEditProduct.product_name);
-
-      formData.append("price", String(formEditProduct.price));
-
+      formData.append("product_name", formEditProduct.product_name.trim());
       formData.append("stock", String(formEditProduct.stock));
 
-      // Only send image when user selected a new image
+      let sizeIndex = 0;
+
+      selectedSizes.forEach(([size, data]) => {
+        formData.append(`sizes[${sizeIndex}][size]`, size);
+
+        formData.append(`sizes[${sizeIndex}][price]`, String(data.price));
+
+        sizeIndex++;
+      });
+
+      // Image hanya dikirim jika diganti
       if (formEditProduct.image) {
         formData.append("image", formEditProduct.image);
       }
@@ -230,7 +301,7 @@ export default function EditProduct() {
         url: `${API_URL}/api/products/${id}`,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data",
+          // "Content-Type": "multipart/form-data",
         },
         data: formData,
       });
@@ -252,9 +323,6 @@ export default function EditProduct() {
     }
   };
 
-  // =========================================================
-  // LOADING
-  // =========================================================
   if (loading) {
     return (
       <div className="bg-white rounded-2xl shadow-md p-6">
@@ -264,19 +332,19 @@ export default function EditProduct() {
       </div>
     );
   }
+  const sizeList: ("Small" | "Medium" | "Large")[] = [
+    "Small",
+    "Medium",
+    "Large",
+  ];
 
-  // =========================================================
-  // UI
-  // =========================================================
   return (
     <div className="bg-white rounded-2xl shadow-md p-6">
-      {/* HEADER */}
       <div className="flex items-center gap-2 text-xl text-orange-600 font-bold mb-6">
         <AiFillEdit size={24} />
         Edit Product
       </div>
 
-      {/* CATEGORY */}
       <div className="mb-5">
         <label
           htmlFor="category_id"
@@ -302,7 +370,6 @@ export default function EditProduct() {
         </select>
       </div>
 
-      {/* PRODUCT NAME */}
       <div className="mb-5">
         <label
           htmlFor="product_name"
@@ -322,39 +389,72 @@ export default function EditProduct() {
         />
       </div>
 
-      {/* PRICE */}
       <div className="mb-5">
-        <label
-          htmlFor="price"
-          className="block text-sm font-semibold text-gray-700 mb-2"
-        >
-          Price
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Available Sizes & Prices
         </label>
 
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
-            $
-          </span>
+        <div className="space-y-3">
+          {sizeList.map((size) => {
+            const sizeData = formEditProduct.sizes[size];
 
-          <input
-            type="number"
-            id="price"
-            name="price"
-            min="0"
-            step="0.01"
-            className="w-full border border-gray-300 p-3 pl-8 rounded-xl outline-none focus:ring-2 focus:ring-orange-400"
-            onChange={handleChange}
-            value={formEditProduct.price || ""}
-            placeholder="0.00"
-          />
+            return (
+              <div
+                key={size}
+                className={`border rounded-xl p-4 transition ${
+                  sizeData.enabled
+                    ? "border-orange-300 bg-orange-50"
+                    : "border-gray-200 bg-gray-50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={sizeData.enabled}
+                    onChange={() => handleSizeToggle(size)}
+                    className="w-5 h-5 accent-orange-500 cursor-pointer"
+                  />
+
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-800">{size}</p>
+
+                    {!sizeData.enabled && (
+                      <p className="text-xs text-gray-400">
+                        This size will not be shown to customers
+                      </p>
+                    )}
+                  </div>
+
+                  {sizeData.enabled && (
+                    <div className="relative w-40">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
+                        $
+                      </span>
+
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={sizeData.price || ""}
+                        onChange={(e) =>
+                          handleSizePriceChange(size, e.target.value)
+                        }
+                        className="w-full border border-gray-300 p-2.5 pl-8 rounded-lg outline-none focus:ring-2 focus:ring-orange-400"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <p className="text-xs text-gray-500 mt-1">
-          Current price: {formatCurrency(formEditProduct.price)}
+        <p className="text-xs text-gray-500 mt-2">
+          Only selected sizes will be available to customers.
         </p>
       </div>
 
-      {/* STOCK */}
       <div className="mb-5">
         <label
           htmlFor="stock"
@@ -375,7 +475,6 @@ export default function EditProduct() {
         />
       </div>
 
-      {/* IMAGE */}
       <div className="mb-6">
         <label
           htmlFor="image"
@@ -384,16 +483,12 @@ export default function EditProduct() {
           Product Image
         </label>
 
-        {/* PREVIEW */}
         {previewImage ? (
           <div className="mb-4">
             <img
               src={previewImage}
               alt={editProduct.product_name}
               className="w-40 h-40 object-cover rounded-2xl border border-gray-200 shadow-sm"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
             />
           </div>
         ) : (
@@ -402,7 +497,6 @@ export default function EditProduct() {
           </div>
         )}
 
-        {/* FILE INPUT */}
         <input
           type="file"
           id="image"
@@ -417,7 +511,6 @@ export default function EditProduct() {
         </p>
       </div>
 
-      {/* BUTTON */}
       <div className="flex gap-3">
         <button
           className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white py-2.5 px-6 rounded-xl transition cursor-pointer disabled:cursor-not-allowed font-semibold"
