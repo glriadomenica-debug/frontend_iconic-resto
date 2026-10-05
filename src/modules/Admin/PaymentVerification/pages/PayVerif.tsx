@@ -52,7 +52,7 @@ export default function PaymentVerificationPage() {
     try {
       const res = await axios({
         method: "GET",
-        url: "http://localhost:8000/api/transactions",
+        url: "http://192.168.101.4:8000/api/transactions",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -96,7 +96,7 @@ export default function PaymentVerificationPage() {
     try {
       await axios({
         method: "POST",
-        url: `http://localhost:8000/api/payment-verifications/${id}`,
+        url: `http://192.168.101.4:8000/api/payment-verifications/${id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -118,7 +118,7 @@ export default function PaymentVerificationPage() {
     try {
       const res = await axios({
         method: "GET",
-        url: `http://localhost:8000/api/transactions/${transactionId}/details`,
+        url: `http://192.168.101.4:8000/api/transactions/${transactionId}/details`,
         headers: {
           Authorization: `Bearer ${token}`,
         },

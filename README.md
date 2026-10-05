@@ -8,6 +8,7 @@ This system helps restaurants manage customer self-ordering, kitchen workflows, 
 ## ✨ Features
 
 ### 👨‍🍳 Customer Side
+
 - Browse food & beverage menu
 - Add to cart
 - Self ordering system
@@ -15,15 +16,18 @@ This system helps restaurants manage customer self-ordering, kitchen workflows, 
 - cash/cashless payment
 
 ### 🧾 Cashier Side
+
 - Verify payments
 - Manage transaction status
 
 ### 🍳 Kitchen Side
+
 - Kitchen order management
 - Cooking status update
 - Real-time order flow
 
 ### 🛠️ Admin Side
+
 - Dashboard analytics
 - Revenue analytics chart
 - Most ordered products chart
@@ -38,6 +42,7 @@ This system helps restaurants manage customer self-ordering, kitchen workflows, 
 ## 🧑‍💻 Tech Stack
 
 ### Frontend
+
 - React
 - TypeScript
 - Vite
@@ -50,6 +55,7 @@ This system helps restaurants manage customer self-ordering, kitchen workflows, 
 - jspdf-autotable
 
 ### Backend
+
 - Laravel REST API
 - Laravel Sanctum Authentication
 
@@ -58,6 +64,7 @@ This system helps restaurants manage customer self-ordering, kitchen workflows, 
 ## 📊 Dashboard Analytics
 
 The admin dashboard includes:
+
 - Total revenue
 - Total paid transactions
 - Most ordered products
@@ -123,12 +130,13 @@ npm run dev
 Create `.env` file:
 
 ```env
-VITE_API_URL=http://localhost:8000/api
+VITE_API_URL=http://192.168.101.4:8000/api
 ```
 
 ---
 
 ## 🔗 Backend Repository
+
 https://github.com/glriadomenica-debug/Backend_iconic-resto
 
 Make sure backend Laravel API is running.
@@ -136,36 +144,40 @@ Make sure backend Laravel API is running.
 Example API:
 
 ```txt
-http://localhost:8000/api
+http://192.168.101.4:8000/api
 ```
 
 ---
 
 ## 📌 Main Modules
 
-| Module | Description |
-|---|---|
-| Authentication | Login & Role Access |
-| Product Management | CRUD menu products |
-| Category Management | CRUD categories |
-| Transaction System | Customer ordering |
-| Kitchen Management | Kitchen workflow |
+| Module               | Description                  |
+| -------------------- | ---------------------------- |
+| Authentication       | Login & Role Access          |
+| Product Management   | CRUD menu products           |
+| Category Management  | CRUD categories              |
+| Transaction System   | Customer ordering            |
+| Kitchen Management   | Kitchen workflow             |
 | Payment Verification | Cashier payment verification |
-| Analytics Dashboard | Revenue & sales analytics |
-| Reporting System | Monthly transaction reports |
+| Analytics Dashboard  | Revenue & sales analytics    |
+| Reporting System     | Monthly transaction reports  |
 
 ---
 
 ## 📈 Analytics Features
 
 ### Most Ordered Products
+
 Displays top-selling menu items based on paid transactions.
 
 ### Revenue Analytics
+
 Displays daily revenue charts from paid transactions.
 
 ### Transaction Report
+
 Generate downloadable PDF reports:
+
 - Total revenue
 - Best seller products
 - Most used payment method
@@ -174,12 +186,12 @@ Generate downloadable PDF reports:
 
 ## 👥 User Roles
 
-| Role | Access |
-|---|---|
-| Admin | Full system access |
-| Cashier | Payment verification |
-| Kitchen | Kitchen order management |
-| Customer | Self ordering |
+| Role     | Access                   |
+| -------- | ------------------------ |
+| Admin    | Full system access       |
+| Cashier  | Payment verification     |
+| Kitchen  | Kitchen order management |
+| Customer | Self ordering            |
 
 ---
 
@@ -196,28 +208,33 @@ Categories 1 : N Products
 ---
 
 ## 📸 System Overview
+
 Customer side :
 <img width="1807" height="870" alt="Screenshot (59)" src="https://github.com/user-attachments/assets/f2d7f075-312d-43aa-9610-e8faaea276ac" />
 
 Cashier side :
 <img width="1881" height="879" alt="Screenshot (61)" src="https://github.com/user-attachments/assets/d053ac01-4278-4dd0-ae52-7cf4f99c99e3" />
 
-kitchen side : 
+kitchen side :
 <img width="1882" height="854" alt="Screenshot (62)" src="https://github.com/user-attachments/assets/9c309b6a-b33e-4a15-a445-72dd08e8ed0e" />
 
-Admin side : 
+Admin side :
 <img width="1879" height="873" alt="Screenshot (63)" src="https://github.com/user-attachments/assets/b998bf71-9337-416c-973a-c7e1b0dc5a23" />
 
 ---
 
 ### Customer Self Order
+
 Customers can order directly from the menu without waiting for staff.
 
 ### Kitchen Workflow
+
 Kitchen staff receive real-time order updates.
 
 ### Analytics Dashboard
+
 Admin can monitor:
+
 - Revenue
 - Product performance
 - Transaction analytics

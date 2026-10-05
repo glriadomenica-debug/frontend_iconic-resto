@@ -43,11 +43,14 @@ export default function LiveOrder() {
   //Fetch Kitchen orders
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/kitchen/orders", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await axios.get(
+        "http://192.168.101.4:8000/api/kitchen/orders",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       const data = Array.isArray(res.data?.data) ? res.data.data : [];
       const activeOrders = data.filter(
         (item: KitchenOrder) =>
@@ -85,7 +88,7 @@ export default function LiveOrder() {
   const acceptOrder = async (id: number) => {
     try {
       await axios.put(
-        `http://localhost:8000/api/transactions/${id}`,
+        `http://192.168.101.4:8000/api/transactions/${id}`,
         {
           kitchen_status: "cooking",
         },
@@ -106,7 +109,7 @@ export default function LiveOrder() {
   const finishOrder = async (id: number) => {
     try {
       await axios.put(
-        `http://localhost:8000/api/transactions/${id}`,
+        `http://192.168.101.4:8000/api/transactions/${id}`,
         {
           kitchen_status: "ready",
         },

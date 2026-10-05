@@ -43,7 +43,7 @@ export default function EditProduct() {
     try {
       const response = await axios({
         method: "GET",
-        url: "http://localhost:8000/api/products/" + id,
+        url: "http://192.168.101.4:8000/api/products/" + id,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -60,7 +60,7 @@ export default function EditProduct() {
     try {
       const response = await axios({
         method: "GET",
-        url: "http://localhost:8000/api/categories",
+        url: "http://192.168.101.4:8000/api/categories",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -81,7 +81,7 @@ export default function EditProduct() {
     try {
       const response = await axios({
         method: "PUT",
-        url: "http://localhost:8000/api/products/" + id,
+        url: "http://192.168.101.4:8000/api/products/" + id,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

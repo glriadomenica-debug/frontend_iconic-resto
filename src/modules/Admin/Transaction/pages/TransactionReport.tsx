@@ -133,7 +133,7 @@ export default function TransactionReport() {
 
       const res = await axios({
         method: "GET",
-        url: "http://localhost:8000/api/transactions/report",
+        url: "http://192.168.101.4:8000/api/transactions/report",
         headers: {
           Authorization: `Bearer ${token}`,
         },

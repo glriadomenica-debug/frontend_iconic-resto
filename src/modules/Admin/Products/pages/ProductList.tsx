@@ -70,7 +70,7 @@ export default function ListProduct() {
   });
 
   const navigate = useNavigate();
-  const API_URL = "http://localhost:8000";
+  const API_URL = "http://192.168.101.4:8000";
   const fetchProduct = async () => {
     try {
       setLoading(true);

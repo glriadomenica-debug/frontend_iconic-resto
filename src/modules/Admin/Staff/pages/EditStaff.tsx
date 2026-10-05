@@ -36,7 +36,7 @@ export default function EditStaff() {
       setLoading(true);
 
       const response = await axios.get(
-        `http://localhost:8000/api/staff/${id}`,
+        `http://192.168.101.4:8000/api/staff/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -94,7 +94,7 @@ export default function EditStaff() {
     try {
       setSaving(true);
 
-      await axios.put(`http://localhost:8000/api/staff/${id}`, formStaff, {
+      await axios.put(`http://192.168.101.4:8000/api/staff/${id}`, formStaff, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

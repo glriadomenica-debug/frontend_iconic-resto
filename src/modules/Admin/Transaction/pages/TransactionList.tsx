@@ -64,7 +64,7 @@ export default function TransactionList() {
 
       const res = await axios({
         method: "GET",
-        url: `http://localhost:8000/api/transactions?page=${pageNumber}`,
+        url: `http://192.168.101.4:8000/api/transactions?page=${pageNumber}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -87,7 +87,7 @@ export default function TransactionList() {
     try {
       const res = await axios({
         method: "GET",
-        url: `http://localhost:8000/api/transactions/${id}`,
+        url: `http://192.168.101.4:8000/api/transactions/${id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -118,7 +118,7 @@ export default function TransactionList() {
 
       await axios({
         method: "DELETE",
-        url: `http://localhost:8000/api/transactions/${deleteData.id}`,
+        url: `http://192.168.101.4:8000/api/transactions/${deleteData.id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -143,7 +143,7 @@ export default function TransactionList() {
     try {
       await axios({
         method: "POST",
-        url: `http://localhost:8000/api/payment-verifications/${transaction.id}`,
+        url: `http://192.168.101.4:8000/api/payment-verifications/${transaction.id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -177,7 +177,7 @@ export default function TransactionList() {
 
     try {
       await axios.put(
-        `http://localhost:8000/api/transactions/${editData.id}`,
+        `http://192.168.101.4:8000/api/transactions/${editData.id}`,
         {
           customer_name: editData.customer_name,
         },

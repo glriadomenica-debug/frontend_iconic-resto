@@ -45,7 +45,7 @@ export default function ListStaff() {
       setLoading(true);
 
       const res = await axios.get(
-        `http://localhost:8000/api/staff?page=${currentPage}`,
+        `http://192.168.101.4:8000/api/staff?page=${currentPage}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -105,7 +105,7 @@ export default function ListStaff() {
     try {
       setSaveLoading(true);
 
-      await axios.post("http://localhost:8000/api/staff", formStaff, {
+      await axios.post("http://192.168.101.4:8000/api/staff", formStaff, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -148,7 +148,7 @@ export default function ListStaff() {
       setDeleteLoading(true);
 
       await axios.delete(
-        `http://localhost:8000/api/staff/${selectedStaff.id}`,
+        `http://192.168.101.4:8000/api/staff/${selectedStaff.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

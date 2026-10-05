@@ -53,7 +53,7 @@ export default function AdminDashboard() {
 
       const res = await axios({
         method: "GET",
-        url: "http://localhost:8000/api/transactions/analytics",
+        url: "http://192.168.101.4:8000/api/transactions/analytics",
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -48,7 +48,7 @@ export default function ListUsers() {
     try {
       setLoading(true);
 
-      const response = await axios.get("http://localhost:8000/api/users", {
+      const response = await axios.get("http://192.168.101.4:8000/api/users", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -115,7 +115,7 @@ export default function ListUsers() {
       setSaveLoading(true);
 
       const response = await axios.post(
-        "http://localhost:8000/api/users",
+        "http://192.168.101.4:8000/api/users",
         formUser,
         {
           headers: {
@@ -162,11 +162,14 @@ export default function ListUsers() {
     try {
       setDeleteLoading(true);
 
-      await axios.delete(`http://localhost:8000/api/users/${selectedUser.id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      await axios.delete(
+        `http://192.168.101.4:8000/api/users/${selectedUser.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      });
+      );
 
       setOpenModalDelete(false);
       setSelectedUser(null);

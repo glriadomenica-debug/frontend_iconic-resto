@@ -52,7 +52,7 @@ export default function MyOrdersPage() {
       }
 
       const res = await axios.get(
-        `http://localhost:8000/api/my-orders/${token}`,
+        `http://192.168.101.4:8000/api/my-orders/${token}`,
       );
 
       setOrders(res.data.data ?? []);

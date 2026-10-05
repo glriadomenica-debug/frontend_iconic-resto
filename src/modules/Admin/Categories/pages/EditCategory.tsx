@@ -31,7 +31,7 @@ export default function EditCategory() {
       setLoading(true);
 
       const response = await axios.get(
-        `http://localhost:8000/api/categories/${id}`,
+        `http://192.168.101.4:8000/api/categories/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ export default function EditCategory() {
       setSaving(true);
 
       await axios.put(
-        `http://localhost:8000/api/categories/${id}`,
+        `http://192.168.101.4:8000/api/categories/${id}`,
         {
           category_name: formCategory.category_name.trim(),
         },
@@ -126,10 +126,23 @@ export default function EditCategory() {
       </div>
 
       <div className="max-w-xl">
-        <label htmlFor="category_name" className="mb-2 block text-sm font-medium text-gray-700"> Category Name
+        <label
+          htmlFor="category_name"
+          className="mb-2 block text-sm font-medium text-gray-700"
+        >
+          {" "}
+          Category Name
         </label>
 
-        <input id="category_name" type="text" name="category_name" value={formCategory.category_name} onChange={handleChange} disabled={saving} className=" w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100 disabled:bg-gray-100"/>
+        <input
+          id="category_name"
+          type="text"
+          name="category_name"
+          value={formCategory.category_name}
+          onChange={handleChange}
+          disabled={saving}
+          className=" w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100 disabled:bg-gray-100"
+        />
 
         <p className="mt-1.5 text-xs text-gray-400">
           Choose a clear name that helps identify this category.

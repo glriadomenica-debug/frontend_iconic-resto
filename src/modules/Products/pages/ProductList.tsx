@@ -44,7 +44,7 @@
 //     try {
 //       const res = await axios({
 //         method: "GET",
-//         url: `http://localhost:8000/api/products?page=${currentPage}`,
+//         url: `http://192.168.101.4:8000/api/products?page=${currentPage}`,
 //         headers: {
 //           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },
@@ -62,7 +62,7 @@
 //     try {
 //       const response = await axios({
 //         method: "GET",
-//         url: "http://localhost:8000/api/categories",
+//         url: "http://192.168.101.4:8000/api/categories",
 //         headers: {
 //           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },
@@ -89,7 +89,7 @@
 //     try {
 //       await axios({
 //         method: "POST",
-//         url: "http://localhost:8000/api/products",
+//         url: "http://192.168.101.4:8000/api/products",
 //         headers: {
 //           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },
@@ -107,7 +107,7 @@
 //     try {
 //       await axios({
 //         method: "DELETE",
-//         url: `http://localhost:8000/api/products/${selectedId}`,
+//         url: `http://192.168.101.4:8000/api/products/${selectedId}`,
 //         headers: {
 //           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },

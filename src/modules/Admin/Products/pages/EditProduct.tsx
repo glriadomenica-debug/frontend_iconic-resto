@@ -32,7 +32,7 @@ interface SizeForm {
 export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const API_URL = "http://localhost:8000";
+  const API_URL = "http://192.168.101.4:8000";
   const [categories, setCategories] = useState<Category[]>([]);
   const [editProduct, setEditProduct] = useState<EditProduct>({
     id: 0,

@@ -34,7 +34,7 @@ export default function ListCategory() {
       setLoading(true);
 
       const res = await axios.get(
-        `http://localhost:8000/api/categories?page=${currentPage}`,
+        `http://192.168.101.4:8000/api/categories?page=${currentPage}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ export default function ListCategory() {
       setSaveLoading(true);
 
       await axios.post(
-        "http://localhost:8000/api/categories",
+        "http://192.168.101.4:8000/api/categories",
         {
           category_name: formCategory.category_name.trim(),
         },
@@ -140,7 +140,7 @@ export default function ListCategory() {
       setDeleteLoading(true);
 
       await axios.delete(
-        `http://localhost:8000/api/categories/${selectedCategory.id}`,
+        `http://192.168.101.4:8000/api/categories/${selectedCategory.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

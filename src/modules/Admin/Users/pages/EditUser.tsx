@@ -48,7 +48,7 @@ export default function EditUser() {
       setLoading(true);
 
       const response = await axios.get(
-        `http://localhost:8000/api/users/${id}`,
+        `http://192.168.101.4:8000/api/users/${id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -120,7 +120,7 @@ export default function EditUser() {
       }
 
       const response = await axios.put(
-        `http://localhost:8000/api/users/${id}`,
+        `http://192.168.101.4:8000/api/users/${id}`,
         data,
         {
           headers: {
